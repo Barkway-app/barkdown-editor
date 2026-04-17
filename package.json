@@ -44,11 +44,11 @@
   "license": "GPL-3.0-only",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/barkway/barkdown.git"
+    "url": "git+https://github.com/Barkway-app/barkdown-editor.git"
   },
-  "homepage": "https://github.com/barkway/barkdown#readme",
+  "homepage": "https://github.com/Barkway-app/barkdown-editor#readme",
   "bugs": {
-    "url": "https://github.com/barkway/barkdown/issues"
+    "url": "https://github.com/Barkway-app/barkdown-editor/issues"
   },
   "publishConfig": {
     "access": "public"
