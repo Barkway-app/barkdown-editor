@@ -74,6 +74,84 @@ describe('BarkdownEditor', () => {
         expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
     });
 
+    it('applies keyboard shortcuts by default', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('Hello');
+                return { markdown };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" label="Body" />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea').element as HTMLTextAreaElement;
+
+        textarea.setSelectionRange(0, 5);
+
+        await wrapper.find('textarea').trigger('keydown', { key: 'b', ctrlKey: true });
+        await nextTick();
+
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+    });
+
+    it('does not apply keyboard shortcuts when enableHotkeys is false', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('Hello');
+                return { markdown };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" label="Body" :enable-hotkeys="false" />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea').element as HTMLTextAreaElement;
+
+        textarea.setSelectionRange(0, 5);
+
+        await wrapper.find('textarea').trigger('keydown', { key: 'b', ctrlKey: true });
+        await nextTick();
+
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('Hello');
+
+        await wrapper.find('button[aria-label="Bold"]').trigger('mousedown', { button: 0 });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+
+        await wrapper.find('textarea').trigger('keydown', { key: 'z', ctrlKey: true });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+    });
+
+    it('reacts to enableHotkeys prop changes at runtime', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('Hello');
+                const enableHotkeys = ref(true);
+                return { markdown, enableHotkeys };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" label="Body" :enable-hotkeys="enableHotkeys" />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea').element as HTMLTextAreaElement;
+
+        textarea.setSelectionRange(0, 5);
+        await wrapper.find('textarea').trigger('keydown', { key: 'b', ctrlKey: true });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+
+        (wrapper.vm as { enableHotkeys: boolean }).enableHotkeys = false;
+        await nextTick();
+
+        textarea.setSelectionRange(2, 7);
+        await wrapper.find('textarea').trigger('keydown', { key: 'i', ctrlKey: true });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+    });
+
     it('inserts merge tags when select is used', async () => {
         const Host = defineComponent({
             components: { BarkdownEditor },

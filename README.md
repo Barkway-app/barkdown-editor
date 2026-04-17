@@ -2,6 +2,10 @@
 
 Barkdown is a lightweight Vue 3 + TypeScript markdown editor for template-driven apps. It gives you a clean textarea editor, practical toolbar actions, merge tag insertion, and optional async live preview without coupling your app to backend-specific conventions.
 
+## Screenshot
+
+![Barkdown editor demo screenshot](https://raw.githubusercontent.com/Barkway-app/barkdown-editor/main/docs/images/barkdown-editor-demo.png)
+
 ## Why Barkdown
 
 - Fast to integrate into existing Vue 3 apps
@@ -117,7 +121,25 @@ Common props:
 - `previewDebounceMs`
 - `initialPreviewHtml`
 - `initialUnknownTags`
+- `enableHotkeys` (default `true`)
 - label/text customization props (`label`, `previewLabel`, `previewEmptyText`, etc.)
+
+## Keyboard Shortcuts
+
+Shortcuts apply while the editor textarea is focused.
+
+Set `:enable-hotkeys="false"` to disable all editor keyboard shortcuts, including undo/redo.
+
+| Action | Windows / Linux | macOS |
+| --- | --- | --- |
+| Undo | `Ctrl+Z` | `Cmd+Z` |
+| Redo | `Ctrl+Shift+Z` or `Ctrl+Y` | `Cmd+Shift+Z` or `Cmd+Y` |
+| Bold | `Ctrl+B` | `Cmd+B` |
+| Italic | `Ctrl+I` | `Cmd+I` |
+| Link | `Ctrl+K` | `Cmd+K` |
+| Heading 1 | `Ctrl+Alt+1` | `Cmd+Alt+1` |
+| Heading 2 | `Ctrl+Alt+2` | `Cmd+Alt+2` |
+| Heading 3 | `Ctrl+Alt+3` | `Cmd+Alt+3` |
 
 Also exported:
 - `MarkdownFormatter`

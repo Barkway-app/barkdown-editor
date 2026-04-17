@@ -29,6 +29,7 @@ const props = withDefaults(
         name?: string;
         label?: string;
         rows?: number;
+        enableHotkeys?: boolean;
         toolbarActions?: MarkdownToolbarAction[];
         mergeTags?: string[];
         mergeTagPlaceholder?: string;
@@ -51,6 +52,7 @@ const props = withDefaults(
         name: 'markdown',
         label: 'Markdown',
         rows: 18,
+        enableHotkeys: true,
         toolbarActions: () => DEFAULT_MARKDOWN_TOOLBAR_ACTIONS,
         mergeTags: () => [],
         mergeTagPlaceholder: 'Insert merge tag...',
@@ -113,6 +115,7 @@ const {
 } = useMarkdownEditorToolbar({
     value: model,
     getTextarea,
+    enableHotkeys: () => props.enableHotkeys,
 });
 
 const previewEnabled = computed<boolean>(() => !!props.showPreview);

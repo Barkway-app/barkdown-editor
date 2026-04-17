@@ -16,6 +16,8 @@ export type UseMarkdownEditorToolbarOptions = {
     debug?: (message: string, payload?: unknown) => void;
     /** Max undo history size before oldest snapshots are dropped. */
     maxHistorySnapshots?: number;
+    /** Enable or disable editor keyboard shortcuts. */
+    enableHotkeys?: boolean | (() => boolean);
 };
 
 /**
@@ -30,7 +32,7 @@ export type UseMarkdownEditorToolbarResult = {
     applyToolbarAction: (action: MarkdownAction) => void;
     /** Input handler for snapshot tracking and value sync hooks. */
     onTextareaInput: () => void;
-    /** Keydown handler (includes undo shortcut). */
+    /** Keydown handler (undo/redo + formatting shortcuts). */
     onTextareaKeydown: (event: KeyboardEvent) => void;
     /** Selection synchronization handler. */
     onTextareaSelectionChange: () => void;
@@ -55,6 +57,17 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
     const lastSelectionStart = ref<number>(0);
     const lastSelectionEnd = ref<number>(0);
     const maxSnapshots = options.maxHistorySnapshots ?? 200;
+
+    /**
+     * Resolve current hotkey-enabled state.
+     */
+    function hotkeysEnabled(): boolean {
+        if (typeof options.enableHotkeys === 'function') {
+            return options.enableHotkeys();
+        }
+
+        return options.enableHotkeys ?? true;
+    }
 
     /**
      * Optional debug proxy.
@@ -217,6 +230,18 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
         }
 
         historyIndex.value -= 1;
+        applySnapshot(history.value[historyIndex.value]);
+    }
+
+    /**
+     * Step forward in undo history.
+     */
+    function redo(): void {
+        if (historyIndex.value >= history.value.length - 1) {
+            return;
+        }
+
+        historyIndex.value += 1;
         applySnapshot(history.value[historyIndex.value]);
     }
 
@@ -426,13 +451,71 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
     }
 
     /**
-     * Keydown handler with undo shortcut support.
+     * Keydown handler with undo/redo + markdown shortcuts.
      */
     function onTextareaKeydown(event: KeyboardEvent): void {
         syncSelectionFromTextarea();
-        if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'z') {
+        if (!hotkeysEnabled()) {
+            return;
+        }
+
+        if (!event.ctrlKey && !event.metaKey) {
+            return;
+        }
+
+        const key = event.key.toLowerCase();
+
+        if (!event.altKey && !event.shiftKey && key === 'z') {
             event.preventDefault();
             undo();
+            return;
+        }
+
+        if (!event.altKey && event.shiftKey && key === 'z') {
+            event.preventDefault();
+            redo();
+            return;
+        }
+
+        if (!event.altKey && !event.shiftKey && key === 'y') {
+            event.preventDefault();
+            redo();
+            return;
+        }
+
+        if (!event.altKey && !event.shiftKey && key === 'b') {
+            event.preventDefault();
+            applyToolbarAction('bold');
+            return;
+        }
+
+        if (!event.altKey && !event.shiftKey && key === 'i') {
+            event.preventDefault();
+            applyToolbarAction('italic');
+            return;
+        }
+
+        if (!event.altKey && !event.shiftKey && key === 'k') {
+            event.preventDefault();
+            applyToolbarAction('link');
+            return;
+        }
+
+        if (event.altKey && !event.shiftKey) {
+            switch (event.code) {
+                case 'Digit1':
+                    event.preventDefault();
+                    applyToolbarAction('h1');
+                    return;
+                case 'Digit2':
+                    event.preventDefault();
+                    applyToolbarAction('h2');
+                    return;
+                case 'Digit3':
+                    event.preventDefault();
+                    applyToolbarAction('h3');
+                    return;
+            }
         }
     }
 
