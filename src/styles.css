@@ -1,0 +1,8 @@
+/*
+  Ship only Tailwind theme variables + utilities for component styling.
+  We intentionally do not import preflight/base to avoid global style resets
+  leaking into host applications.
+*/
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+@source "./**/*.{ts,vue}";

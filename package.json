@@ -1,0 +1,76 @@
+{
+  "name": "@barkway.app/barkdown-editor",
+  "version": "0.1.0",
+  "description": "A lightweight Vue 3 markdown editor for template-driven apps.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "style": "./dist/style.css",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "dev": "vite",
+    "build": "npm run clean && vite build && vue-tsc -p tsconfig.build.json --declaration --emitDeclarationOnly --outDir dist/types",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "markdown",
+    "editor",
+    "merge-tags",
+    "tailwind"
+  ],
+  "author": "Barkway",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/barkway/barkdown.git"
+  },
+  "homepage": "https://github.com/barkway/barkdown#readme",
+  "bugs": {
+    "url": "https://github.com/barkway/barkdown/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "dependencies": {
+    "lucide": "^0.378.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@vitest/coverage-v8": "^4.0.7",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^25.0.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.0.7",
+    "vue": "^3.4.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
