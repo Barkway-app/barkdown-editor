@@ -9,6 +9,7 @@ import type { MarkdownToolbarAction } from './MarkdownEditorTypes';
  */
 export const DEFAULT_MARKDOWN_TOOLBAR_ACTIONS: MarkdownToolbarAction[] = [
     { action: 'undo', icon: 'undo-2', label: 'Undo', title: 'Undo (Ctrl/Cmd+Z)' },
+    { action: 'redo', icon: 'redo-2', label: 'Redo', title: 'Redo (Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y)' },
     { action: 'h1', icon: 'heading-1', label: 'Heading 1', title: 'Heading 1' },
     { action: 'h2', icon: 'heading-2', label: 'Heading 2', title: 'Heading 2' },
     { action: 'h3', icon: 'heading-3', label: 'Heading 3', title: 'Heading 3' },

@@ -12,6 +12,7 @@ import {
     List,
     ListOrdered,
     Quote,
+    Redo2,
     SeparatorHorizontal,
     Undo2,
 } from 'lucide';
@@ -88,6 +89,7 @@ const availableIcons: Record<string, unknown> = {
     List,
     ListOrdered,
     Quote,
+    Redo2,
     SeparatorHorizontal,
     Undo2,
 };
@@ -112,6 +114,7 @@ const {
     onTextareaKeydown,
     onTextareaSelectionChange,
     onMergeTagChange,
+    isActionDisabled,
 } = useMarkdownEditorToolbar({
     value: model,
     getTextarea,
@@ -194,13 +197,24 @@ function onToolbarMouseDown(event: MouseEvent, action: MarkdownAction): void {
     if (event.button !== 0) {
         return;
     }
+    if (isActionDisabled(action)) {
+        return;
+    }
 
     onTextareaSelectionChange();
     applyToolbarAction(action);
 }
 
 function onToolbarKeydown(action: MarkdownAction): void {
+    if (isActionDisabled(action)) {
+        return;
+    }
+
     applyToolbarAction(action);
+}
+
+function isToolbarActionDisabled(action: MarkdownAction): boolean {
+    return isActionDisabled(action);
 }
 
 function onMergeTagSelectChange(event: Event): void {
@@ -251,9 +265,16 @@ onUnmounted(() => {
                             v-for="action in props.toolbarActions"
                             :key="action.action"
                             type="button"
-                            class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition hover:border-orange-300 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            :class="
+                                isToolbarActionDisabled(action.action)
+                                    ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
+                                    : 'border-slate-300 bg-white text-slate-600 hover:border-orange-300 hover:text-orange-600'
+                            "
                             :title="action.title"
                             :aria-label="action.title"
+                            :aria-disabled="isToolbarActionDisabled(action.action) ? 'true' : 'false'"
+                            :disabled="isToolbarActionDisabled(action.action)"
                             @mousedown="onToolbarMouseDown($event, action.action)"
                             @click.prevent
                             @keydown.enter.prevent="onToolbarKeydown(action.action)"

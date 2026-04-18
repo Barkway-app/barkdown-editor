@@ -1,5 +1,8 @@
 # @barkway.app/barkdown-editor
 
+[![npm version](https://img.shields.io/npm/v/%40barkway.app%2Fbarkdown-editor)](https://www.npmjs.com/package/@barkway.app/barkdown-editor)
+[![npm downloads](https://img.shields.io/npm/dm/%40barkway.app%2Fbarkdown-editor)](https://www.npmjs.com/package/@barkway.app/barkdown-editor)
+
 Barkdown is a lightweight Vue 3 + TypeScript markdown editor for template-driven apps. It gives you a clean textarea editor, practical toolbar actions, merge tag insertion, and optional async live preview without coupling your app to backend-specific conventions.
 
 ## Screenshot
@@ -123,6 +126,9 @@ Common props:
 - `initialUnknownTags`
 - `enableHotkeys` (default `true`)
 - label/text customization props (`label`, `previewLabel`, `previewEmptyText`, etc.)
+
+Toolbar behavior:
+- Undo/redo buttons are automatically disabled when history cannot move backward/forward.
 
 ## Keyboard Shortcuts
 

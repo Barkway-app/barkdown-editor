@@ -7,6 +7,7 @@
  */
 export type MarkdownAction =
     | 'undo'
+    | 'redo'
     | 'h1'
     | 'h2'
     | 'h3'

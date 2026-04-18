@@ -38,6 +38,8 @@ export type UseMarkdownEditorToolbarResult = {
     onTextareaSelectionChange: () => void;
     /** Merge-tag dropdown change handler. */
     onMergeTagChange: (tag: string) => void;
+    /** Whether a toolbar action is currently unavailable. */
+    isActionDisabled: (action: MarkdownAction) => boolean;
 };
 
 /**
@@ -246,6 +248,34 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
     }
 
     /**
+     * Whether undo can be applied from current history position.
+     */
+    function canUndo(): boolean {
+        return historyIndex.value > 0;
+    }
+
+    /**
+     * Whether redo can be applied from current history position.
+     */
+    function canRedo(): boolean {
+        return historyIndex.value >= 0 && historyIndex.value < history.value.length - 1;
+    }
+
+    /**
+     * Determine whether a toolbar action should be shown as disabled.
+     */
+    function isActionDisabled(action: MarkdownAction): boolean {
+        switch (action) {
+            case 'undo':
+                return !canUndo();
+            case 'redo':
+                return !canRedo();
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Apply formatter output to model/textarea and record undo snapshot.
      */
     function applyFormatterResult(result: { value: string; selectionStart: number; selectionEnd: number }): void {
@@ -392,10 +422,16 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
     function applyToolbarAction(action: MarkdownAction): void {
         syncSelectionFromTextarea();
         debug('toolbar_action', { action });
+        if (isActionDisabled(action)) {
+            return;
+        }
 
         switch (action) {
             case 'undo':
                 undo();
+                return;
+            case 'redo':
+                redo();
                 return;
             case 'h1':
                 applyHeading(1);
@@ -555,5 +591,6 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
         onTextareaKeydown,
         onTextareaSelectionChange,
         onMergeTagChange,
+        isActionDisabled,
     };
 }

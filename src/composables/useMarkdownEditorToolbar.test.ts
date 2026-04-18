@@ -97,6 +97,37 @@ describe('useMarkdownEditorToolbar', () => {
         expect(value.value).toBe('**Hello**');
     });
 
+    it('exposes undo/redo disabled states from history position', async () => {
+        const value = ref('Hello');
+        const textarea = createTextarea(value.value);
+        textarea.selectionStart = 0;
+        textarea.selectionEnd = 5;
+
+        const toolbar = useMarkdownEditorToolbar({
+            value,
+            getTextarea: () => textarea,
+        });
+
+        toolbar.initializeHistory();
+        expect(toolbar.isActionDisabled('undo')).toBe(true);
+        expect(toolbar.isActionDisabled('redo')).toBe(true);
+
+        toolbar.applyToolbarAction('bold');
+        await nextTick();
+        expect(toolbar.isActionDisabled('undo')).toBe(false);
+        expect(toolbar.isActionDisabled('redo')).toBe(true);
+
+        toolbar.applyToolbarAction('undo');
+        await nextTick();
+        expect(toolbar.isActionDisabled('undo')).toBe(true);
+        expect(toolbar.isActionDisabled('redo')).toBe(false);
+
+        toolbar.applyToolbarAction('redo');
+        await nextTick();
+        expect(toolbar.isActionDisabled('undo')).toBe(false);
+        expect(toolbar.isActionDisabled('redo')).toBe(true);
+    });
+
     it('applies bold, italic, and link keyboard shortcuts', async () => {
         const boldValue = ref('hello');
         const boldTextarea = createTextarea(boldValue.value);

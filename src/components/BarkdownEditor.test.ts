@@ -14,6 +14,7 @@ vi.mock('lucide', () => ({
     List: {},
     ListOrdered: {},
     Quote: {},
+    Redo2: {},
     SeparatorHorizontal: {},
     Undo2: {},
     createIcons: vi.fn(),
@@ -72,6 +73,49 @@ describe('BarkdownEditor', () => {
         await nextTick();
 
         expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
+    });
+
+    it('reflects undo/redo disabled states', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('## Hello');
+                return { markdown };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" label="Body" />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea').element as HTMLTextAreaElement;
+        const undoButton = wrapper.find('button[aria-label^="Undo"]');
+        const redoButton = wrapper.find('button[aria-label^="Redo"]');
+        const boldButton = wrapper.find('button[aria-label="Bold"]');
+
+        expect(undoButton.attributes('disabled')).toBeDefined();
+        expect(redoButton.attributes('disabled')).toBeDefined();
+        expect(boldButton.attributes('aria-pressed')).toBeUndefined();
+
+        textarea.setSelectionRange(3, 8);
+        await boldButton.trigger('mousedown', { button: 0 });
+        await nextTick();
+
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('## **Hello**');
+        expect(undoButton.attributes('disabled')).toBeUndefined();
+        expect(redoButton.attributes('disabled')).toBeDefined();
+
+        await undoButton.trigger('mousedown', { button: 0 });
+        await nextTick();
+
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('## Hello');
+        expect(undoButton.attributes('disabled')).toBeDefined();
+        expect(redoButton.attributes('disabled')).toBeUndefined();
+
+        await redoButton.trigger('mousedown', { button: 0 });
+        await nextTick();
+
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('## **Hello**');
+        expect(undoButton.attributes('disabled')).toBeUndefined();
+        expect(redoButton.attributes('disabled')).toBeDefined();
     });
 
     it('applies keyboard shortcuts by default', async () => {
