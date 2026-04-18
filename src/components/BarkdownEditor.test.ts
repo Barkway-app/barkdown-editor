@@ -400,4 +400,20 @@ describe('BarkdownEditor', () => {
 
         expect(wrapper.text()).not.toContain('Preview');
     });
+
+    it('hides editor and preview titles when showTitles is false', () => {
+        const wrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                showTitles: false,
+                label: 'Editor Title',
+                previewLabel: 'Preview Title',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+
+        expect(wrapper.text()).not.toContain('Editor Title');
+        expect(wrapper.text()).not.toContain('Preview Title');
+    });
 });

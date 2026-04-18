@@ -170,6 +170,7 @@ Common props:
 - `mergeTags`
 - `showMergeTagSelect`
 - `showPreview`
+- `showTitles` (default `true`)
 - `previewRenderer`
 - `previewDebounceMs`
 - `initialPreviewHtml`

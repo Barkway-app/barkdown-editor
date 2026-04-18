@@ -39,6 +39,7 @@ const props = withDefaults(
         mergeTagPlaceholder?: string;
         showMergeTagSelect?: boolean;
         showPreview?: boolean;
+        showTitles?: boolean;
         previewLabel?: string;
         previewRenderer?: MarkdownPreviewRenderer;
         previewDebounceMs?: number;
@@ -63,6 +64,7 @@ const props = withDefaults(
         mergeTagPlaceholder: 'Insert merge tag...',
         showMergeTagSelect: true,
         showPreview: true,
+        showTitles: true,
         previewLabel: 'Preview',
         previewDebounceMs: 350,
         initialPreviewHtml: '',
@@ -345,7 +347,7 @@ onUnmounted(() => {
 <template>
     <div ref="rootElement" class="barkdown grid gap-6 lg:grid-cols-2 lg:items-start" :data-theme="resolvedTheme">
         <div class="flex min-h-0 flex-col gap-2">
-            <label :for="props.id" class="barkdown__label text-sm font-semibold">
+            <label v-if="props.showTitles" :for="props.id" class="barkdown__label text-sm font-semibold">
                 {{ props.label }}
             </label>
 
@@ -397,6 +399,7 @@ onUnmounted(() => {
                     v-model="model"
                     :name="props.name"
                     :rows="props.rows"
+                    :aria-label="props.showTitles ? undefined : props.label"
                     class="barkdown__textarea min-h-[20rem] w-full flex-1 resize-y border-0 p-3 font-mono text-sm leading-6 outline-none"
                     @input="onTextareaInput"
                     @keydown="onTextareaKeydown"
@@ -409,7 +412,7 @@ onUnmounted(() => {
         </div>
 
         <div v-if="previewEnabled" class="flex min-h-0 flex-col gap-2">
-            <div class="barkdown__label text-sm font-semibold">{{ props.previewLabel }}</div>
+            <div v-if="props.showTitles" class="barkdown__label text-sm font-semibold">{{ props.previewLabel }}</div>
 
             <div class="barkdown__panel relative overflow-hidden rounded-xl border">
                     <div
