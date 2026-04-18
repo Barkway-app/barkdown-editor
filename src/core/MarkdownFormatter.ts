@@ -73,10 +73,10 @@ export class MarkdownFormatter {
      * Wrap selection in markdown link syntax.
      *
      * Behavior:
-     * - if selection is empty, inserts `[link text](https://barkway.app)`
+     * - if selection is empty, inserts `[link text](url)`
      * - URL portion is selected after insertion for quick replacement
      */
-    public insertLink(url = 'https://barkway.app'): MarkdownFormatterResult {
+    public insertLink(url = 'url'): MarkdownFormatterResult {
         const selectedText = this.selectedText();
         const selected = selectedText.length > 0 ? selectedText : 'link text';
         const replacement = `[${selected}](${url})`;

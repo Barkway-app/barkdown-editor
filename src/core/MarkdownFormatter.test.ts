@@ -119,7 +119,7 @@ describe('MarkdownFormatter', () => {
             selectionEnd: 'Book appointment'.length,
         }).insertLink();
 
-        expect(selected.value).toBe('Book [appointment](https://barkway.app)');
+        expect(selected.value).toBe('Book [appointment](url)');
 
         const collapsed = new MarkdownFormatter({
             value: 'Book now',
@@ -127,7 +127,7 @@ describe('MarkdownFormatter', () => {
             selectionEnd: 8,
         }).insertLink();
 
-        expect(collapsed.value).toBe('Book now[link text](https://barkway.app)');
+        expect(collapsed.value).toBe('Book now[link text](url)');
     });
 
     it('inserts horizontal rule with newline hygiene', () => {

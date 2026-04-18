@@ -172,7 +172,7 @@ describe('useMarkdownEditorToolbar', () => {
         linkToolbar.initializeHistory();
         linkToolbar.onTextareaKeydown(createKeydownEvent({ key: 'k', ctrlKey: true }));
         await nextTick();
-        expect(linkValue.value).toBe('[hello](https://barkway.app)');
+        expect(linkValue.value).toBe('[hello](url)');
     });
 
     it('applies heading shortcuts with Ctrl/Cmd+Alt+1/2/3', async () => {

@@ -216,6 +216,14 @@ Barkdown is built by the team at Barkway as part of our work on practical tools 
 
 Learn more about Barkway and the Barkway platform: https://barkway.app
 
+## Licensing
+
+This package is licensed under `GPL-3.0-only` (GNU General Public License v3.0 only).
+
+If you distribute this package, modifications, or derivative works, review the GPLv3 obligations first to make sure your usage and distribution model remain compliant.
+
+See [LICENSE](./LICENSE) for the full license text.
+
 ## Development
 
 Run the local demo:

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.4 - 2026-04-18
+
+### Changed
+- Replaced the default inserted markdown link URL with a neutral `url` placeholder so the package no longer ships a hardcoded Barkway domain in runtime link insertion behavior.
+
+### Docs
+- Added an explicit licensing section to the README clarifying that the package is licensed as `GPL-3.0-only` and pointing to the full license text.
+
 ## 0.1.3 - 2026-04-18
 
 ### Fixed
