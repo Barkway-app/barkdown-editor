@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.5 - 2026-04-18
+
+### Added
+- Added `disabled` and `readonly` flags to `BarkdownEditor` so host apps can render non-editable states while consistently blocking toolbar, hotkey, and merge-tag write actions.
+
 ## 0.1.4 - 2026-04-18
 
 ### Changed
