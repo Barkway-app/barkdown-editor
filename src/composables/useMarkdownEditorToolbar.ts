@@ -18,6 +18,8 @@ export type UseMarkdownEditorToolbarOptions = {
     maxHistorySnapshots?: number;
     /** Enable or disable editor keyboard shortcuts. */
     enableHotkeys?: boolean | (() => boolean);
+    /** Enable or disable all editor write interactions. */
+    isEditable?: boolean | (() => boolean);
 };
 
 /**
@@ -69,6 +71,17 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
         }
 
         return options.enableHotkeys ?? true;
+    }
+
+    /**
+     * Resolve whether editor write actions are allowed.
+     */
+    function editorIsEditable(): boolean {
+        if (typeof options.isEditable === 'function') {
+            return options.isEditable();
+        }
+
+        return options.isEditable ?? true;
     }
 
     /**
@@ -265,6 +278,10 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
      * Determine whether a toolbar action should be shown as disabled.
      */
     function isActionDisabled(action: MarkdownAction): boolean {
+        if (!editorIsEditable()) {
+            return true;
+        }
+
         switch (action) {
             case 'undo':
                 return !canUndo();
@@ -491,7 +508,7 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
      */
     function onTextareaKeydown(event: KeyboardEvent): void {
         syncSelectionFromTextarea();
-        if (!hotkeysEnabled()) {
+        if (!hotkeysEnabled() || !editorIsEditable()) {
             return;
         }
 
@@ -566,7 +583,7 @@ export function useMarkdownEditorToolbar(options: UseMarkdownEditorToolbarOption
      * Insert selected merge-tag token into markdown body.
      */
     function onMergeTagChange(tag: string): void {
-        if (!tag) {
+        if (!tag || !editorIsEditable()) {
             return;
         }
 

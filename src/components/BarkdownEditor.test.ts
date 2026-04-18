@@ -291,6 +291,59 @@ describe('BarkdownEditor', () => {
         expect((wrapper.vm as { markdown: string }).markdown).toBe('**Hello**');
     });
 
+    it('disables textarea and write controls when disabled is true', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('Hello');
+                const mergeTags = ['customer.first_name'];
+                return { markdown, mergeTags };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" :merge-tags="mergeTags" disabled />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea');
+        const boldButton = wrapper.find('button[aria-label="Bold"]');
+        const mergeTagSelect = wrapper.find('select');
+
+        expect(textarea.attributes('disabled')).toBeDefined();
+        expect(boldButton.attributes('disabled')).toBeDefined();
+        expect(mergeTagSelect.attributes('disabled')).toBeDefined();
+
+        await boldButton.trigger('mousedown', { button: 0 });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('Hello');
+    });
+
+    it('marks textarea readonly and blocks write actions when readonly is true', async () => {
+        const Host = defineComponent({
+            components: { BarkdownEditor },
+            setup() {
+                const markdown = ref('Hello');
+                const mergeTags = ['customer.first_name'];
+                return { markdown, mergeTags };
+            },
+            template: '<BarkdownEditor v-model="markdown" name="body" :merge-tags="mergeTags" readonly />',
+        });
+
+        const wrapper = mount(Host);
+        const textarea = wrapper.find('textarea');
+        const boldButton = wrapper.find('button[aria-label="Bold"]');
+        const mergeTagSelect = wrapper.find('select');
+
+        expect(textarea.attributes('readonly')).toBeDefined();
+        expect(textarea.attributes('aria-readonly')).toBe('true');
+        expect(boldButton.attributes('disabled')).toBeDefined();
+        expect(mergeTagSelect.attributes('disabled')).toBeDefined();
+
+        const textareaEl = textarea.element as HTMLTextAreaElement;
+        textareaEl.setSelectionRange(0, 5);
+        await textarea.trigger('keydown', { key: 'b', ctrlKey: true });
+        await nextTick();
+        expect((wrapper.vm as { markdown: string }).markdown).toBe('Hello');
+    });
+
     it('reacts to enableHotkeys prop changes at runtime', async () => {
         const Host = defineComponent({
             components: { BarkdownEditor },

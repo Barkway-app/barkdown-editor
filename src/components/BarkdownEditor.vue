@@ -33,6 +33,8 @@ const props = withDefaults(
         name?: string;
         label?: string;
         rows?: number;
+        disabled?: boolean;
+        readonly?: boolean;
         enableHotkeys?: boolean;
         toolbarActions?: MarkdownToolbarAction[];
         mergeTags?: string[];
@@ -58,6 +60,8 @@ const props = withDefaults(
         name: 'markdown',
         label: 'Markdown',
         rows: 18,
+        disabled: false,
+        readonly: false,
         enableHotkeys: true,
         toolbarActions: () => DEFAULT_MARKDOWN_TOOLBAR_ACTIONS,
         mergeTags: () => [],
@@ -205,10 +209,12 @@ const {
     value: model,
     getTextarea,
     enableHotkeys: () => props.enableHotkeys,
+    isEditable: () => !props.disabled && !props.readonly,
 });
 
 const previewEnabled = computed<boolean>(() => !!props.showPreview);
 const livePreviewEnabled = computed<boolean>(() => !!props.showPreview && !!props.previewRenderer);
+const editorIsInteractive = computed<boolean>(() => !props.disabled && !props.readonly);
 
 const { previewHtml, previewUnknownTags, previewFailed, previewLoading } = useMarkdownPreview({
     markdownBody: model,
@@ -385,6 +391,7 @@ onUnmounted(() => {
                         :id="`${props.id}_merge_tag_select`"
                         v-model="mergeTagSelection"
                         class="barkdown__merge-tag-select"
+                        :disabled="!editorIsInteractive"
                         @change="onMergeTagSelectChange"
                     >
                         <option v-for="option in mergeTagOptions" :key="option.value || 'placeholder'" :value="option.value">
@@ -399,7 +406,10 @@ onUnmounted(() => {
                     v-model="model"
                     :name="props.name"
                     :rows="props.rows"
+                    :disabled="props.disabled"
+                    :readonly="props.readonly"
                     :aria-label="props.showTitles ? undefined : props.label"
+                    :aria-readonly="props.readonly ? 'true' : undefined"
                     class="barkdown__textarea"
                     @input="onTextareaInput"
                     @keydown="onTextareaKeydown"

@@ -170,6 +170,8 @@ Primary export:
 
 Common props:
 - `v-model`
+- `disabled`
+- `readonly`
 - `toolbarActions`
 - `mergeTags`
 - `showMergeTagSelect`
@@ -214,7 +216,7 @@ Also exported:
 
 Barkdown is built by the team at Barkway as part of our work on practical tools for modern, template-driven communication workflows.
 
-Learn more about Barkway and the Barkway platform: https://barkway.app
+Learn more about Barkway and our open-source work: https://www.barkway.app/open-source
 
 ## Licensing
 

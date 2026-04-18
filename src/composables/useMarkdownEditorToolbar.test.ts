@@ -282,6 +282,35 @@ describe('useMarkdownEditorToolbar', () => {
         expect(value.value).toBe('**hello**');
     });
 
+    it('blocks toolbar, hotkey, and merge-tag edits when isEditable is false', async () => {
+        const value = ref('hello');
+        const textarea = createTextarea(value.value);
+        textarea.selectionStart = 0;
+        textarea.selectionEnd = 5;
+
+        const toolbar = useMarkdownEditorToolbar({
+            value,
+            getTextarea: () => textarea,
+            isEditable: false,
+        });
+
+        toolbar.initializeHistory();
+        expect(toolbar.isActionDisabled('bold')).toBe(true);
+        expect(toolbar.isActionDisabled('undo')).toBe(true);
+
+        toolbar.applyToolbarAction('bold');
+        await nextTick();
+        expect(value.value).toBe('hello');
+
+        toolbar.onTextareaKeydown(createKeydownEvent({ key: 'b', ctrlKey: true }));
+        await nextTick();
+        expect(value.value).toBe('hello');
+
+        toolbar.onMergeTagChange('customer.first_name');
+        await nextTick();
+        expect(value.value).toBe('hello');
+    });
+
     it('ignores non-matching shortcuts and does not prevent default', () => {
         const value = ref('hello');
         const textarea = createTextarea(value.value);
