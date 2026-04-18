@@ -1,6 +1,6 @@
 {
   "name": "@barkway.app/barkdown-editor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A lightweight Vue 3 markdown editor for template-driven apps.",
   "type": "module",
   "main": "./dist/index.cjs",
