@@ -345,23 +345,23 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div ref="rootElement" class="barkdown grid gap-6 lg:grid-cols-2 lg:items-start" :data-theme="resolvedTheme">
-        <div class="flex min-h-0 flex-col gap-2">
-            <label v-if="props.showTitles" :for="props.id" class="barkdown__label text-sm font-semibold">
+    <div ref="rootElement" class="barkdown barkdown__layout" :data-theme="resolvedTheme">
+        <div class="barkdown__column">
+            <label v-if="props.showTitles" :for="props.id" class="barkdown__label">
                 {{ props.label }}
             </label>
 
-            <div class="barkdown__panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
-                <div class="barkdown__panel-header border-b p-2">
-                    <div role="toolbar" aria-label="Markdown formatting actions" class="flex flex-wrap items-center gap-2">
+            <div class="barkdown__panel barkdown__editor-panel">
+                <div class="barkdown__panel-header">
+                    <div role="toolbar" aria-label="Markdown formatting actions" class="barkdown__toolbar">
                         <button
                             v-for="action in props.toolbarActions"
                             :key="action.action"
                             type="button"
-                            class="barkdown__toolbar-btn inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus:outline-none"
+                            class="barkdown__toolbar-btn"
                             :class="
                                 isToolbarActionDisabled(action.action)
-                                    ? 'barkdown__toolbar-btn--disabled cursor-not-allowed'
+                                    ? 'barkdown__toolbar-btn--disabled'
                                     : 'barkdown__toolbar-btn--enabled'
                             "
                             :title="action.title"
@@ -373,18 +373,18 @@ onUnmounted(() => {
                             @keydown.enter.prevent="onToolbarKeydown(action.action)"
                             @keydown.space.prevent="onToolbarKeydown(action.action)"
                         >
-                            <i :data-markdown-lucide="action.icon" class="h-4 w-4" aria-hidden="true" />
-                            <span class="sr-only">{{ action.label }}</span>
+                            <i :data-markdown-lucide="action.icon" class="barkdown__toolbar-icon" aria-hidden="true" />
+                            <span class="barkdown__sr-only">{{ action.label }}</span>
                         </button>
                     </div>
                 </div>
 
-                <div v-if="props.showMergeTagSelect && mergeTagOptions.length > 1" class="barkdown__merge-tag-row border-b p-2">
-                    <label :for="`${props.id}_merge_tag_select`" class="sr-only">Merge tags</label>
+                <div v-if="props.showMergeTagSelect && mergeTagOptions.length > 1" class="barkdown__merge-tag-row">
+                    <label :for="`${props.id}_merge_tag_select`" class="barkdown__sr-only">Merge tags</label>
                     <select
                         :id="`${props.id}_merge_tag_select`"
                         v-model="mergeTagSelection"
-                        class="barkdown__merge-tag-select h-9 w-full rounded-md border px-2 text-sm focus:outline-none"
+                        class="barkdown__merge-tag-select"
                         @change="onMergeTagSelectChange"
                     >
                         <option v-for="option in mergeTagOptions" :key="option.value || 'placeholder'" :value="option.value">
@@ -400,7 +400,7 @@ onUnmounted(() => {
                     :name="props.name"
                     :rows="props.rows"
                     :aria-label="props.showTitles ? undefined : props.label"
-                    class="barkdown__textarea min-h-[20rem] w-full flex-1 resize-y border-0 p-3 font-mono text-sm leading-6 outline-none"
+                    class="barkdown__textarea"
                     @input="onTextareaInput"
                     @keydown="onTextareaKeydown"
                     @select="onTextareaSelectionChange"
@@ -411,38 +411,41 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <div v-if="previewEnabled" class="flex min-h-0 flex-col gap-2">
-            <div v-if="props.showTitles" class="barkdown__label text-sm font-semibold">{{ props.previewLabel }}</div>
+        <div v-if="previewEnabled" class="barkdown__column barkdown__preview-column">
+            <div v-if="props.showTitles" class="barkdown__label">{{ props.previewLabel }}</div>
 
-            <div class="barkdown__panel relative overflow-hidden rounded-xl border">
-                    <div
-                        v-if="props.showPreviewBanner"
-                        class="barkdown__preview-banner pointer-events-none absolute left-4 top-3 z-10 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium leading-4"
-                    >
-                    <i data-markdown-lucide="info" class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <div class="barkdown__panel barkdown__preview-panel">
+                <div
+                    v-if="props.showPreviewBanner"
+                    class="barkdown__preview-banner"
+                >
+                    <i data-markdown-lucide="info" class="barkdown__preview-banner-icon" aria-hidden="true" />
                     <span>{{ props.previewBannerText }}</span>
                 </div>
 
-                <div class="barkdown__preview-body max-h-[32rem] overflow-y-auto p-4" :class="props.showPreviewBanner ? 'pt-11' : ''">
-                    <div v-if="previewFailed" class="barkdown__alert barkdown__alert--danger mb-3 rounded-md border px-3 py-2 text-sm">
+                <div
+                    class="barkdown__preview-body"
+                    :class="props.showPreviewBanner ? 'barkdown__preview-body--with-banner' : ''"
+                >
+                    <div v-if="previewFailed" class="barkdown__alert barkdown__alert--danger">
                         {{ props.previewErrorText }}
                     </div>
 
                     <div
                         v-if="previewUnknownTags.length > 0"
-                        class="barkdown__alert barkdown__alert--warning mb-3 rounded-md border px-3 py-2 text-sm"
+                        class="barkdown__alert barkdown__alert--warning"
                     >
-                        <div class="font-semibold">{{ props.unknownTagsLabel }}</div>
-                        <div class="mt-1">{{ previewUnknownTags.join(', ') }}</div>
+                        <div class="barkdown__alert-title">{{ props.unknownTagsLabel }}</div>
+                        <div class="barkdown__alert-content">{{ previewUnknownTags.join(', ') }}</div>
                     </div>
 
                     <div
                         v-if="previewHtml"
-                        class="barkdown-preview max-w-none text-sm leading-6"
+                        class="barkdown-preview barkdown__preview-content"
                         v-html="previewHtml"
                     />
 
-                    <div v-else class="barkdown__muted text-sm">
+                    <div v-else class="barkdown__muted">
                         {{ previewLoading ? props.previewLoadingText : props.previewEmptyText }}
                     </div>
                 </div>

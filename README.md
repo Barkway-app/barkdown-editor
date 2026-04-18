@@ -14,7 +14,7 @@ Barkdown is a lightweight Vue 3 + TypeScript markdown editor for template-driven
 - Markdown-first editing with familiar toolbar actions
 - Built-in merge tag insertion for message/template workflows
 - Optional preview via your own async renderer callback
-- Polished default UI with portable Tailwind 4 utility classes
+- Polished default UI with scoped Barkdown CSS (no global utility leakage)
 
 ## Quick Start
 
@@ -29,6 +29,10 @@ Import styles once in your app entry:
 ```ts
 import '@barkway.app/barkdown-editor/style.css';
 ```
+
+CSS scoping note:
+- The distributed stylesheet is scoped to Barkdown selectors (for example `.barkdown`, `.barkdown__*`) and does not export bare global utility classes like `.flex` or `.grid`.
+- Host apps can customize visuals through `.barkdown` and `--bd-*` CSS variables without requiring a host Tailwind setup.
 
 Use the editor:
 
@@ -224,6 +228,7 @@ npm run dev
 Notes:
 - Demo source: `demo/App.vue`
 - Package source: `src/`
+- Demo utility styling loads from the Tailwind Play CDN in `index.html`; the package build no longer depends on local Tailwind/PostCSS tooling.
 
 ## Testing
 

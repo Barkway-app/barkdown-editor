@@ -102,7 +102,7 @@ onMounted(() => {
             <header class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                     <h1 class="demo-title text-5xl leading-none md:text-6xl" :class="isDark ? 'text-[#cad2c5]' : 'text-[#2f3e46]'">Barkdown</h1>
-                    <p class="text-sm" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
+                    <p class="demo-tagline text-sm py-4" :class="isDark ? 'text-slate-300' : 'text-slate-600'">
                         Vue 3 component preview with merge tags and async live preview callback.
                     </p>
                 </div>

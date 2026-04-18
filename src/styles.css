@@ -1,12 +1,3 @@
-/*
-  Ship only Tailwind theme variables + utilities for component styling.
-  We intentionally do not import preflight/base to avoid global style resets
-  leaking into host applications.
-*/
-@import "tailwindcss/theme";
-@import "tailwindcss/utilities";
-@source "./**/*.{ts,vue}";
-
 .barkdown {
     --bd-bg: #f5f7fa;
     --bd-surface: #ffffff;
@@ -41,34 +32,77 @@
     color-scheme: dark;
 }
 
+.barkdown.barkdown__layout {
+    display: grid;
+    gap: 1.5rem;
+}
+
+@media (min-width: 64rem) {
+    .barkdown.barkdown__layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+}
+
+.barkdown .barkdown__column {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 .barkdown .barkdown__label {
     color: var(--bd-heading);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
 }
 
 .barkdown .barkdown__muted {
     color: var(--bd-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
 }
 
 .barkdown .barkdown__panel {
-    border-color: var(--bd-border);
+    border: 1px solid var(--bd-border);
+    border-radius: 0.75rem;
     background-color: var(--bd-surface);
     box-shadow: 0 1px 3px rgb(15 23 42 / 0.09), 0 1px 2px rgb(15 23 42 / 0.05);
 }
 
-.barkdown .barkdown__panel-header {
-    border-color: var(--bd-border);
-    background-color: var(--bd-bg);
+.barkdown .barkdown__editor-panel {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-.barkdown .barkdown__merge-tag-row {
-    border-color: var(--bd-border);
-    background-color: var(--bd-surface);
+.barkdown .barkdown__panel-header {
+    border-bottom: 1px solid var(--bd-border);
+    background-color: var(--bd-bg);
+    padding: 0.5rem;
+}
+
+.barkdown .barkdown__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .barkdown .barkdown__toolbar-btn {
-    border-color: var(--bd-border);
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--bd-border);
+    border-radius: 0.375rem;
     background-color: var(--bd-surface);
     color: var(--bd-muted);
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .barkdown .barkdown__toolbar-btn--enabled {
@@ -81,6 +115,7 @@
 }
 
 .barkdown .barkdown__toolbar-btn--disabled {
+    cursor: not-allowed;
     border-color: color-mix(in oklab, var(--bd-border) 76%, var(--bd-surface));
     background-color: color-mix(in oklab, var(--bd-surface) 88%, var(--bd-bg));
     color: color-mix(in oklab, var(--bd-muted) 70%, var(--bd-surface));
@@ -90,6 +125,29 @@
 .barkdown .barkdown__toolbar-btn:focus {
     outline: 2px solid color-mix(in oklab, var(--bd-accent) 56%, transparent);
     outline-offset: 1px;
+}
+
+.barkdown .barkdown__toolbar-icon {
+    height: 1rem;
+    width: 1rem;
+}
+
+.barkdown .barkdown__merge-tag-row {
+    border-bottom: 1px solid var(--bd-border);
+    background-color: var(--bd-surface);
+    padding: 0.5rem;
+}
+
+.barkdown .barkdown__merge-tag-select {
+    height: 2.25rem;
+    width: 100%;
+    border: 1px solid var(--bd-border);
+    border-radius: 0.375rem;
+    background-color: var(--bd-surface);
+    padding-inline: 0.5rem;
+    color: var(--bd-text);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
 }
 
 .barkdown .barkdown__merge-tag-select:focus,
@@ -105,15 +163,18 @@
     border-color: var(--bd-border);
 }
 
-.barkdown .barkdown__merge-tag-select {
-    border-color: var(--bd-border);
-    background-color: var(--bd-surface);
-    color: var(--bd-text);
-}
-
 .barkdown .barkdown__textarea {
+    min-height: 20rem;
+    width: 100%;
+    flex: 1 1 auto;
+    resize: vertical;
+    border: 0;
     background-color: var(--bd-surface);
+    padding: 0.75rem;
     color: var(--bd-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
 }
 
 .barkdown .barkdown__textarea::placeholder {
@@ -130,19 +191,64 @@
     color: var(--bd-text);
 }
 
+.barkdown .barkdown__preview-panel {
+    position: relative;
+    overflow: hidden;
+}
+
 .barkdown .barkdown__preview-body {
+    max-height: 32rem;
+    overflow-y: auto;
     background-color: var(--bd-preview-bg);
+    padding: 1rem;
+}
+
+.barkdown .barkdown__preview-body--with-banner {
+    padding-top: 2.75rem;
 }
 
 .barkdown .barkdown__preview-banner {
-    border-color: color-mix(in oklab, var(--bd-accent) 30%, var(--bd-border));
+    pointer-events: none;
+    position: absolute;
+    top: 0.75rem;
+    left: 1rem;
+    z-index: 10;
+    display: inline-flex;
+    max-width: calc(100% - 2rem);
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid color-mix(in oklab, var(--bd-accent) 30%, var(--bd-border));
+    border-radius: 9999px;
     background-color: color-mix(in oklab, var(--bd-accent) 10%, var(--bd-surface));
+    padding: 0.25rem 0.75rem;
     color: var(--bd-accent);
+    font-size: 11px;
+    line-height: 1rem;
+    font-weight: 500;
     box-shadow: 0 1px 2px rgb(15 23 42 / 0.1);
 }
 
+.barkdown .barkdown__preview-banner-icon {
+    height: 0.875rem;
+    width: 0.875rem;
+    flex-shrink: 0;
+}
+
 .barkdown .barkdown__alert {
-    border-color: var(--bd-border);
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--bd-border);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.barkdown .barkdown__alert-title {
+    font-weight: 600;
+}
+
+.barkdown .barkdown__alert-content {
+    margin-top: 0.25rem;
 }
 
 .barkdown .barkdown__alert--warning {
@@ -157,8 +263,12 @@
     color: color-mix(in oklab, var(--bd-danger) 78%, var(--bd-text));
 }
 
+.barkdown .barkdown__preview-content,
 .barkdown .barkdown-preview {
+    max-width: none;
     color: var(--bd-text);
+    font-size: 0.875rem;
+    line-height: 1.5rem;
 }
 
 .barkdown .barkdown-preview p {
@@ -238,4 +348,16 @@
     border-radius: 0;
     background-color: transparent;
     padding: 0;
+}
+
+.barkdown .barkdown__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
