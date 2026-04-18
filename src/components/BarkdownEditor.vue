@@ -24,6 +24,9 @@ import { useMarkdownPreview } from '../composables/useMarkdownPreview';
 const model = defineModel<string>({ default: '' });
 defineOptions({ name: 'BarkdownEditor' });
 
+type BarkdownThemeOption = 'light' | 'dark' | 'auto';
+type BarkdownResolvedTheme = 'light' | 'dark';
+
 const props = withDefaults(
     defineProps<{
         id?: string;
@@ -47,6 +50,7 @@ const props = withDefaults(
         previewLoadingText?: string;
         previewErrorText?: string;
         unknownTagsLabel?: string;
+        theme?: BarkdownThemeOption;
     }>(),
     {
         id: 'barkdown-editor',
@@ -69,6 +73,7 @@ const props = withDefaults(
         previewLoadingText: 'Rendering preview...',
         previewErrorText: 'Preview could not be refreshed right now. Keep editing and try again.',
         unknownTagsLabel: 'Unknown merge tags',
+        theme: 'auto',
     },
 );
 
@@ -77,7 +82,12 @@ type MergeTagOption = { value: string; label: string };
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const rootElement = ref<HTMLElement | null>(null);
 const iconsInitialized = ref<boolean>(false);
+const resolvedTheme = ref<BarkdownResolvedTheme>('light');
+const prefersDarkScheme = ref<boolean>(false);
+const themeMediaQuery = ref<MediaQueryList | null>(null);
+const themeMediaQueryBound = ref<boolean>(false);
 const LUCIDE_NAME_ATTR = 'data-markdown-lucide';
+const DARK_MODE_QUERY = '(prefers-color-scheme: dark)';
 const availableIcons: Record<string, unknown> = {
     Bold,
     Heading1,
@@ -105,6 +115,80 @@ function toPascalCaseIconName(name: string): string {
 function getTextarea(): HTMLTextAreaElement | null {
     return textareaRef.value;
 }
+
+function getThemeMediaQuery(): MediaQueryList | null {
+    if (themeMediaQuery.value) {
+        return themeMediaQuery.value;
+    }
+
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+        return null;
+    }
+
+    themeMediaQuery.value = window.matchMedia(DARK_MODE_QUERY);
+    return themeMediaQuery.value;
+}
+
+function syncResolvedTheme(): void {
+    if (props.theme === 'light' || props.theme === 'dark') {
+        resolvedTheme.value = props.theme;
+        return;
+    }
+
+    resolvedTheme.value = prefersDarkScheme.value ? 'dark' : 'light';
+}
+
+function onSystemThemeChange(event: MediaQueryListEvent): void {
+    prefersDarkScheme.value = event.matches;
+    if (props.theme === 'auto') {
+        syncResolvedTheme();
+    }
+}
+
+function bindThemeMediaQuery(): void {
+    const query = getThemeMediaQuery();
+    if (!query || themeMediaQueryBound.value) {
+        return;
+    }
+
+    if (typeof query.addEventListener === 'function') {
+        query.addEventListener('change', onSystemThemeChange);
+    } else {
+        query.addListener(onSystemThemeChange);
+    }
+
+    themeMediaQueryBound.value = true;
+}
+
+function unbindThemeMediaQuery(): void {
+    const query = themeMediaQuery.value;
+    if (!query || !themeMediaQueryBound.value) {
+        return;
+    }
+
+    if (typeof query.removeEventListener === 'function') {
+        query.removeEventListener('change', onSystemThemeChange);
+    } else {
+        query.removeListener(onSystemThemeChange);
+    }
+
+    themeMediaQueryBound.value = false;
+}
+
+function refreshThemeState(): void {
+    const query = getThemeMediaQuery();
+    prefersDarkScheme.value = query?.matches ?? false;
+
+    if (props.theme === 'auto') {
+        bindThemeMediaQuery();
+    } else {
+        unbindThemeMediaQuery();
+    }
+
+    syncResolvedTheme();
+}
+
+refreshThemeState();
 
 const {
     mergeTagSelection,
@@ -237,7 +321,13 @@ watch(
     resetIconRender,
 );
 
+watch(
+    () => props.theme,
+    refreshThemeState,
+);
+
 onMounted(() => {
+    refreshThemeState();
     initializeHistory();
     requestIconRender();
 
@@ -246,30 +336,31 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    unbindThemeMediaQuery();
     window.removeEventListener('mouseup', onTextareaSelectionChange);
     window.removeEventListener('keyup', onTextareaSelectionChange);
 });
 </script>
 
 <template>
-    <div ref="rootElement" class="grid gap-6 lg:grid-cols-2 lg:items-start">
+    <div ref="rootElement" class="barkdown grid gap-6 lg:grid-cols-2 lg:items-start" :data-theme="resolvedTheme">
         <div class="flex min-h-0 flex-col gap-2">
-            <label :for="props.id" class="text-sm font-semibold text-slate-800">
+            <label :for="props.id" class="barkdown__label text-sm font-semibold">
                 {{ props.label }}
             </label>
 
-            <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-200 bg-slate-50/80 p-2">
+            <div class="barkdown__panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
+                <div class="barkdown__panel-header border-b p-2">
                     <div role="toolbar" aria-label="Markdown formatting actions" class="flex flex-wrap items-center gap-2">
                         <button
                             v-for="action in props.toolbarActions"
                             :key="action.action"
                             type="button"
-                            class="inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            class="barkdown__toolbar-btn inline-flex h-8 w-8 items-center justify-center rounded-md border transition focus:outline-none"
                             :class="
                                 isToolbarActionDisabled(action.action)
-                                    ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
-                                    : 'border-slate-300 bg-white text-slate-600 hover:border-orange-300 hover:text-orange-600'
+                                    ? 'barkdown__toolbar-btn--disabled cursor-not-allowed'
+                                    : 'barkdown__toolbar-btn--enabled'
                             "
                             :title="action.title"
                             :aria-label="action.title"
@@ -286,12 +377,12 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <div v-if="props.showMergeTagSelect && mergeTagOptions.length > 1" class="border-b border-slate-200 bg-white p-2">
+                <div v-if="props.showMergeTagSelect && mergeTagOptions.length > 1" class="barkdown__merge-tag-row border-b p-2">
                     <label :for="`${props.id}_merge_tag_select`" class="sr-only">Merge tags</label>
                     <select
                         :id="`${props.id}_merge_tag_select`"
                         v-model="mergeTagSelection"
-                        class="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                        class="barkdown__merge-tag-select h-9 w-full rounded-md border px-2 text-sm focus:outline-none"
                         @change="onMergeTagSelectChange"
                     >
                         <option v-for="option in mergeTagOptions" :key="option.value || 'placeholder'" :value="option.value">
@@ -306,7 +397,7 @@ onUnmounted(() => {
                     v-model="model"
                     :name="props.name"
                     :rows="props.rows"
-                    class="min-h-[20rem] w-full flex-1 resize-y border-0 bg-white p-3 font-mono text-sm leading-6 text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:ring-0"
+                    class="barkdown__textarea min-h-[20rem] w-full flex-1 resize-y border-0 p-3 font-mono text-sm leading-6 outline-none"
                     @input="onTextareaInput"
                     @keydown="onTextareaKeydown"
                     @select="onTextareaSelectionChange"
@@ -318,25 +409,25 @@ onUnmounted(() => {
         </div>
 
         <div v-if="previewEnabled" class="flex min-h-0 flex-col gap-2">
-            <div class="text-sm font-semibold text-slate-800">{{ props.previewLabel }}</div>
+            <div class="barkdown__label text-sm font-semibold">{{ props.previewLabel }}</div>
 
-            <div class="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div
-                    v-if="props.showPreviewBanner"
-                    class="pointer-events-none absolute left-4 top-3 z-10 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-medium leading-4 text-orange-700 shadow-sm"
-                >
+            <div class="barkdown__panel relative overflow-hidden rounded-xl border">
+                    <div
+                        v-if="props.showPreviewBanner"
+                        class="barkdown__preview-banner pointer-events-none absolute left-4 top-3 z-10 inline-flex max-w-[calc(100%-2rem)] items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium leading-4"
+                    >
                     <i data-markdown-lucide="info" class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>{{ props.previewBannerText }}</span>
                 </div>
 
-                <div class="max-h-[32rem] overflow-y-auto p-4" :class="props.showPreviewBanner ? 'pt-11' : ''">
-                    <div v-if="previewFailed" class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div class="barkdown__preview-body max-h-[32rem] overflow-y-auto p-4" :class="props.showPreviewBanner ? 'pt-11' : ''">
+                    <div v-if="previewFailed" class="barkdown__alert barkdown__alert--danger mb-3 rounded-md border px-3 py-2 text-sm">
                         {{ props.previewErrorText }}
                     </div>
 
                     <div
                         v-if="previewUnknownTags.length > 0"
-                        class="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+                        class="barkdown__alert barkdown__alert--warning mb-3 rounded-md border px-3 py-2 text-sm"
                     >
                         <div class="font-semibold">{{ props.unknownTagsLabel }}</div>
                         <div class="mt-1">{{ previewUnknownTags.join(', ') }}</div>
@@ -344,11 +435,11 @@ onUnmounted(() => {
 
                     <div
                         v-if="previewHtml"
-                        class="bw-markdown max-w-none text-sm leading-6 text-slate-800 [&_a]:text-orange-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-orange-200 [&_blockquote]:pl-3 [&_h1]:mt-5 [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mt-3 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:ml-6 [&_ol>li]:list-decimal [&_p]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-slate-900 [&_pre]:p-3 [&_pre]:text-slate-100 [&_ul>li]:list-disc [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1 [&_hr]:my-5 [&_hr]:border-slate-200"
+                        class="barkdown-preview max-w-none text-sm leading-6"
                         v-html="previewHtml"
                     />
 
-                    <div v-else class="text-sm text-slate-500">
+                    <div v-else class="barkdown__muted text-sm">
                         {{ previewLoading ? props.previewLoadingText : props.previewEmptyText }}
                     </div>
                 </div>

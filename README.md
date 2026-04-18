@@ -1,13 +1,12 @@
 # @barkway.app/barkdown-editor
 
 [![npm version](https://img.shields.io/npm/v/%40barkway.app%2Fbarkdown-editor)](https://www.npmjs.com/package/@barkway.app/barkdown-editor)
-[![npm downloads](https://img.shields.io/npm/dm/%40barkway.app%2Fbarkdown-editor)](https://www.npmjs.com/package/@barkway.app/barkdown-editor)
+[![GitHub stars](https://img.shields.io/github/stars/Barkway-app/barkdown-editor?style=social)](https://github.com/Barkway-app/barkdown-editor/stargazers)
+[![CI](https://github.com/Barkway-app/barkdown-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Barkway-app/barkdown-editor/actions/workflows/ci.yml)
 
 Barkdown is a lightweight Vue 3 + TypeScript markdown editor for template-driven apps. It gives you a clean textarea editor, practical toolbar actions, merge tag insertion, and optional async live preview without coupling your app to backend-specific conventions.
 
-## Screenshot
-
-![Barkdown editor demo screenshot](https://raw.githubusercontent.com/Barkway-app/barkdown-editor/main/docs/images/barkdown-editor-demo.png)
+![Barkdown editor demo screenshot](https://raw.githubusercontent.com/Barkway-app/barkdown-editor/main/docs/images/barkdown-editor-demo.gif)
 
 ## Why Barkdown
 
@@ -71,6 +70,57 @@ const mergeTags = ['customer.first_name', 'customer.last_name', 'business.name']
 </template>
 ```
 
+## Theming
+
+`BarkdownEditor` supports a `theme` prop:
+
+- `'auto'` (default): resolves from `prefers-color-scheme` and updates live while mounted.
+- `'light'`
+- `'dark'`
+
+The resolved mode is written to the component root as `data-theme="light"` or `data-theme="dark"`.
+
+```vue
+<BarkdownEditor
+  v-model="markdown"
+  name="message_body"
+  theme="auto"
+/>
+```
+
+### CSS Variable Overrides
+
+All package visual tokens are scoped to the root `.barkdown` wrapper and can be overridden by host apps:
+
+- `--bd-bg`
+- `--bd-surface`
+- `--bd-border`
+- `--bd-text`
+- `--bd-muted`
+- `--bd-accent`
+- `--bd-preview-bg`
+- `--bd-code-bg`
+- `--bd-warning`
+- `--bd-danger`
+
+Example host override:
+
+```css
+.marketing-editor .barkdown {
+  --bd-surface: #ffffff;
+  --bd-border: #d1d5db;
+  --bd-accent: #0f766e;
+  --bd-preview-bg: #f9fafb;
+}
+
+.marketing-editor .barkdown[data-theme='dark'] {
+  --bd-surface: #111827;
+  --bd-border: #334155;
+  --bd-accent: #2dd4bf;
+  --bd-preview-bg: #0b1220;
+}
+```
+
 ## Async Preview Renderer Example
 
 ```vue
@@ -125,6 +175,7 @@ Common props:
 - `initialPreviewHtml`
 - `initialUnknownTags`
 - `enableHotkeys` (default `true`)
+- `theme` (`'light' | 'dark' | 'auto'`, default `'auto'`)
 - label/text customization props (`label`, `previewLabel`, `previewEmptyText`, etc.)
 
 Toolbar behavior:

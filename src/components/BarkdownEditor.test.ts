@@ -1,6 +1,6 @@
 import { defineComponent, nextTick, ref } from 'vue';
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import BarkdownEditor from './BarkdownEditor.vue';
 
 vi.mock('lucide', () => ({
@@ -36,7 +36,57 @@ function deferred<T>() {
     return { promise, resolve, reject };
 }
 
+type MediaQueryChangeListener = (event: MediaQueryListEvent) => void;
+
+function mockPrefersDarkScheme(initialDarkMode: boolean) {
+    const listeners = new Set<MediaQueryChangeListener>();
+    const mediaQueryList = {
+        matches: initialDarkMode,
+        media: '(prefers-color-scheme: dark)',
+        onchange: null,
+        addEventListener: vi.fn((eventName: string, listener: MediaQueryChangeListener) => {
+            if (eventName === 'change') {
+                listeners.add(listener);
+            }
+        }),
+        removeEventListener: vi.fn((eventName: string, listener: MediaQueryChangeListener) => {
+            if (eventName === 'change') {
+                listeners.delete(listener);
+            }
+        }),
+        addListener: vi.fn((listener: MediaQueryChangeListener) => {
+            listeners.add(listener);
+        }),
+        removeListener: vi.fn((listener: MediaQueryChangeListener) => {
+            listeners.delete(listener);
+        }),
+        dispatchEvent: vi.fn(() => true),
+    } as unknown as MediaQueryList;
+
+    window.matchMedia = vi.fn().mockImplementation((query: string) => {
+        if (query === '(prefers-color-scheme: dark)') {
+            return mediaQueryList;
+        }
+
+        return { ...mediaQueryList, media: query } as MediaQueryList;
+    });
+
+    function setDarkMode(nextDarkMode: boolean): void {
+        (mediaQueryList as { matches: boolean }).matches = nextDarkMode;
+        const event = { matches: nextDarkMode, media: '(prefers-color-scheme: dark)' } as MediaQueryListEvent;
+        listeners.forEach((listener) => listener(event));
+    }
+
+    return { setDarkMode };
+}
+
+const originalMatchMedia = window.matchMedia;
+
 describe('BarkdownEditor', () => {
+    afterEach(() => {
+        window.matchMedia = originalMatchMedia;
+    });
+
     it('updates v-model from textarea input', async () => {
         const Host = defineComponent({
             components: { BarkdownEditor },
@@ -52,6 +102,79 @@ describe('BarkdownEditor', () => {
         await wrapper.find('textarea').setValue('Updated value');
 
         expect((wrapper.vm as { markdown: string }).markdown).toBe('Updated value');
+    });
+
+    it('resolves auto theme from prefers-color-scheme', async () => {
+        mockPrefersDarkScheme(true);
+        const darkWrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+        await nextTick();
+        expect(darkWrapper.get('.barkdown').attributes('data-theme')).toBe('dark');
+
+        mockPrefersDarkScheme(false);
+        const lightWrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+        await nextTick();
+        expect(lightWrapper.get('.barkdown').attributes('data-theme')).toBe('light');
+    });
+
+    it('honors explicit light and dark theme props over system preference', async () => {
+        mockPrefersDarkScheme(true);
+        const lightWrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                theme: 'light',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+        await nextTick();
+        expect(lightWrapper.get('.barkdown').attributes('data-theme')).toBe('light');
+
+        mockPrefersDarkScheme(false);
+        const darkWrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                theme: 'dark',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+        await nextTick();
+        expect(darkWrapper.get('.barkdown').attributes('data-theme')).toBe('dark');
+    });
+
+    it('updates auto theme when system preference changes', async () => {
+        const { setDarkMode } = mockPrefersDarkScheme(false);
+        const wrapper = mount(BarkdownEditor, {
+            props: {
+                modelValue: 'Hello',
+                name: 'body',
+                theme: 'auto',
+                'onUpdate:modelValue': () => undefined,
+            },
+        });
+
+        await nextTick();
+        expect(wrapper.get('.barkdown').attributes('data-theme')).toBe('light');
+
+        setDarkMode(true);
+        await nextTick();
+        expect(wrapper.get('.barkdown').attributes('data-theme')).toBe('dark');
+
+        setDarkMode(false);
+        await nextTick();
+        expect(wrapper.get('.barkdown').attributes('data-theme')).toBe('light');
     });
 
     it('applies toolbar formatting actions', async () => {
@@ -240,8 +363,8 @@ describe('BarkdownEditor', () => {
         pending.resolve({ html: '<p>Rendered</p>', unknownTags: ['missing.value'] });
         await flushPromises();
 
-        expect(wrapper.find('.bw-markdown').exists()).toBe(true);
-        expect(wrapper.find('.bw-markdown').html()).toContain('Rendered');
+        expect(wrapper.find('.barkdown-preview').exists()).toBe(true);
+        expect(wrapper.find('.barkdown-preview').html()).toContain('Rendered');
         expect(wrapper.text()).toContain('missing.value');
     });
 
